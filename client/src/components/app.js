@@ -9,10 +9,15 @@ class App extends Component{
       inputText: '7810 Yorktown Place, Los Angeles, California 90045'
     }
 
-    this.fetchData = this.fetchData.bind(this);
+    this._fetchData = this._fetchData.bind(this);
+    this._handleChange = this._handleChange.bind(this);
   }
 
-  fetchData(evt) {
+  _handleChange(evt) { 
+    this.setState({ inputText: evt.target.value });
+  }
+
+  _fetchData(evt) {
     evt.preventDefault();
 
     const request = new Request('http://localhost:8000/api', {
@@ -32,8 +37,8 @@ class App extends Component{
     return (
       <div>
         <h1> react app </h1>
-        <form onSubmit={this.fetchData}>
-          <input/>
+        <form onSubmit={this._fetchData}>
+          <input onChange={this._handleChange} />
         </form>
       </div>
     )

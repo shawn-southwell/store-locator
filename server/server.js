@@ -10,15 +10,19 @@ const apiKey = require('../apiKey').apiKey;
 const readFile = Promise.promisify(require('fs').readFile);
 const app = express();
 
-app.use(express.static(path.join('__dirname', '../client/dist')));
+const { addressToCoord, findNearestStore, calculateDistance } = require('../controllers/getStoreController');
 
-const CSVData = fs.readFileSync(CSV, { encoding: 'utf8' });
-const JSONData = pp.parse(CSVData, { 
-	complete: (res) => {
-		app.listen(8000, () => console.log('listening on port 8000'));
-		return res.data;
-	}
-});
+function storeLocatorInit() { 
+  const CSVData = fs.readFileSync(CSV, { encoding: 'utf8' });
+  return pp.parse(CSVData, { 
+    complete: (res) => {
+      app.listen(8000, () => console.log('listening on port 8000'));
+      app.use(express.static(path.join('__dirname', '../client/dist')));
+      return res.data;
+    }
+  });
+}
+const JSONData = storeLocatorInit();
 
 app.get('/api', (req, res) => { 
   const address = req.headers.data;
@@ -30,43 +34,9 @@ app.get('/api', (req, res) => {
 				.then(nearestStore => res.json(nearestStore))
 				.catch(err => {
 					console.error(err);
-					res.status(500).end();		
+					res.status(500).json({ err });		
 				})
 		});
 })
-
-function addressToCoord(address,key) {
-  return rp(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${apiKey}`);
-} 
-
-function findNearestStore(dataset, clientLocation) {
-	return Promise.try(() => { 
-		return dataset.data.reduce((nearestStore, currentStore) => {
-			const currentDistance = calculateDistance(clientLocation, { lat: currentStore[6], lng: currentStore[7] });
-			return currentDistance < nearestStore.distanceAway ? 
-				Object.assign(nearestStore, { address: currentStore[2], distanceAway: currentDistance }) : 
-				nearestStore;	
-		}, { address: '', distanceAway: Infinity })
-	})
-}
 	
-function calculateDistance(target, query) {
-  return Math.sqrt(
-    ((target.lat - query.lat) ** 2) +
-    ((target.lng - query.lng) ** 2)
-  )
-}
-
 module.exports = app;
-/*
-function csvToJSON(filePath) {
-  return readFile(filePath, { encoding: 'utf8' })
-}
-
-csvToJSON(CSV)
-	.then((storeData) => {
-		pp.parse(storeData, { 
-			complete: (res) => console.log(res.data) });
-	})
-	.catch(err => console.error(err))
-*/

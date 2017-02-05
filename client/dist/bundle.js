@@ -21534,9 +21534,10 @@
 	    var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
 
 	    _this.state = {
-	      inputText: ''
+	      inputText: '7810 Yorktown Place, Los Angeles, California 90045'
 	    };
 
+	    _this.fetchData = _this.fetchData.bind(_this);
 	    return _this;
 	  }
 
@@ -21544,9 +21545,20 @@
 	    key: 'fetchData',
 	    value: function fetchData(evt) {
 	      evt.preventDefault();
-	      console.log('firing');
-	      fetch('http://localhost:8000/api').then(function (data) {
-	        return console.log(data);
+
+	      var request = new Request('http://localhost:8000/api', {
+	        headers: new Headers({
+	          'Content-Type': 'text/plain',
+	          'Data': this.state.inputText
+	        })
+	      });
+
+	      fetch(request).then(function (data) {
+	        return data.json();
+	      }).then(function (json) {
+	        return console.log(json);
+	      }).catch(function (err) {
+	        return console.error(err);
 	      });
 	    }
 	  }, {
