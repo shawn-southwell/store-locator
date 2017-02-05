@@ -6,16 +6,26 @@ class App extends Component{
     super();
 
     this.state = {
-      inputText: ''
+      inputText: '7810 Yorktown Place, Los Angeles, California 90045'
     }
 
+    this.fetchData = this.fetchData.bind(this);
   }
 
   fetchData(evt) {
     evt.preventDefault();
-    console.log('firing');
-    fetch('http://localhost:8000/api')
-      .then(data => console.log(data));
+
+    const request = new Request('http://localhost:8000/api', {
+      headers: new Headers({
+        'Content-Type': 'text/plain',
+        'Data': this.state.inputText
+      })
+    })
+    
+    fetch(request)
+      .then(data => data.json())
+      .then(json => console.log(json))
+      .catch(err => console.error(err));
   }
 	
   render(){
