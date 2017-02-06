@@ -30,17 +30,17 @@ app.get('/api', (req, res) => {
   const address = req.headers.data;
   
   if (!JSONData) return res.status(500).json({ err: 'Data Parser is broken.' });
-
-	addressToLatLng(address, apiKey)
-		.then(latLng => {
-			const clientLocation = JSON.parse(latLng).results[0].geometry.location;
-			findNearestStore(JSONData, clientLocation)
-				.then(nearestStore => res.json(nearestStore))
-				.catch(err => {
-					console.error(err);
-					res.status(500).json({ err });		
-				})
-		})
+	
+  addressToLatLng(address, apiKey)
+    .then(latLng => {
+      const clientLocation = JSON.parse(latLng).results[0].geometry.location;
+      findNearestStore(JSONData, clientLocation)
+        .then(nearestStore => res.json(nearestStore))
+	.catch(err => {
+	  console.error(err);
+	  res.status(500).json({ err });		
+	})
+      })
     .catch(err => {
       console.error(err)
       res.status(500).json({ err });
