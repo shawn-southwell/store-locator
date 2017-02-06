@@ -21517,6 +21517,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _style = __webpack_require__(180);
+
+	var _style2 = _interopRequireDefault(_style);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21534,16 +21538,28 @@
 	    var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
 
 	    _this.state = {
-	      inputText: '7810 Yorktown Place, Los Angeles, California 90045'
+	      inputText: '',
+	      closestStoreAddress: '',
+	      lat: '',
+	      lng: ''
 	    };
 
-	    _this.fetchData = _this.fetchData.bind(_this);
+	    _this._fetchData = _this._fetchData.bind(_this);
+	    _this._handleChange = _this._handleChange.bind(_this);
+	    _this._redirectToGMaps = _this._redirectToGMaps.bind(_this);
 	    return _this;
 	  }
 
 	  _createClass(App, [{
-	    key: 'fetchData',
-	    value: function fetchData(evt) {
+	    key: '_handleChange',
+	    value: function _handleChange(evt) {
+	      this.setState({ inputText: evt.target.value });
+	    }
+	  }, {
+	    key: '_fetchData',
+	    value: function _fetchData(evt) {
+	      var _this2 = this;
+
 	      evt.preventDefault();
 
 	      var request = new Request('http://localhost:8000/api', {
@@ -21555,27 +21571,53 @@
 
 	      fetch(request).then(function (data) {
 	        return data.json();
-	      }).then(function (json) {
-	        return console.log(json);
+	      }).catch(function (err) {
+	        return console.error(err);
+	      }).then(function (jsonData) {
+	        var address = jsonData.address,
+	            lat = jsonData.lat,
+	            lng = jsonData.lng;
+
+	        console.log(address, lat, lng);
+	        _this2.setState({
+	          closestStoreAddress: address,
+	          lat: lat,
+	          lng: lng
+	        });
 	      }).catch(function (err) {
 	        return console.error(err);
 	      });
+	    }
+	  }, {
+	    key: '_redirectToGMaps',
+	    value: function _redirectToGMaps() {
+	      var gMapsURL = 'http://maps.google.com/?q=' + this.state.lat + ',' + this.state.lng;
+	      window.location.replace(gMapsURL);
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
 	        'div',
-	        null,
+	        { style: _style2.default.body },
 	        _react2.default.createElement(
-	          'h1',
-	          null,
-	          ' react app '
-	        ),
-	        _react2.default.createElement(
-	          'form',
-	          { onSubmit: this.fetchData },
-	          _react2.default.createElement('input', null)
+	          'div',
+	          { style: _style2.default.container },
+	          _react2.default.createElement(
+	            'h1',
+	            null,
+	            'Store Locator'
+	          ),
+	          _react2.default.createElement(
+	            'form',
+	            { onSubmit: this._fetchData },
+	            _react2.default.createElement('input', { onChange: this._handleChange })
+	          ),
+	          _react2.default.createElement(
+	            'p',
+	            { style: _style2.default.button, onClick: this._redirectToGMaps },
+	            this.state.closestStoreAddress
+	          )
 	        )
 	      );
 	    }
@@ -21585,6 +21627,32 @@
 	}(_react.Component);
 
 	exports.default = App;
+
+/***/ },
+/* 180 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = {
+	  body: {
+	    height: '100vh',
+	    display: 'flex',
+	    alignItems: 'center',
+	    justifyContent: 'center'
+	  },
+	  container: {
+	    display: 'flex',
+	    justifyContent: 'center',
+	    alignItems: 'center',
+	    flexDirection: 'column'
+	  },
+	  button: {
+	    cursor: 'pointer',
+	    fontSize: '5rem',
+	    textDecoration: 'underline'
+	  }
+	};
 
 /***/ }
 /******/ ]);

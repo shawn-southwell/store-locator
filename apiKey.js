@@ -1,2 +1,2 @@
-module.exports = { "apiKey": "AIzaSyBSp-uunY5Hd7ntZRc_WLtG8DhZQo11rTQ" };
-
+const apiKey = 'AIzaSyBVnuwlQlIU3z-59Xt8EGqwYuq7gvElGCE';
+module.exports = { apiKey };

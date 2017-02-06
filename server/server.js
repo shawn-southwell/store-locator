@@ -1,16 +1,12 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const request = require('request');
-const rp = require('request-promise');
 const pp = require('papaparse');
-const Promise = require('bluebird');
 const CSV = './store-locations.csv';
 const apiKey = require('../apiKey').apiKey;
-const readFile = Promise.promisify(require('fs').readFile);
 const app = express();
 
-const { addressToCoord, findNearestStore, calculateDistance } = require('../controllers/getStoreController');
+const { addressToLatLng, findNearestStore } = require('../controllers/getStoreController');
 
 function storeLocatorInit() { 
   const CSVData = fs.readFileSync(CSV, { encoding: 'utf8' });
@@ -19,24 +15,34 @@ function storeLocatorInit() {
       app.listen(8000, () => console.log('listening on port 8000'));
       app.use(express.static(path.join('__dirname', '../client/dist')));
       return res.data;
+    },
+    error: (err) => {
+      app.listen(8000, () => console.log(`listening on port 8000, CSV Parse Error: \n ${err}`));
+      app.use(express.static(path.join('__dirname', '../client/dist')));
+      return false;
     }
   });
 }
+
 const JSONData = storeLocatorInit();
 
 app.get('/api', (req, res) => { 
   const address = req.headers.data;
+  
+  if (!JSONData) return res.status(500).json({ err: 'Data Parser is broken.' });
 
-	addressToCoord(address,apiKey)
-		.then(data => {
-			const clientLocation = JSON.parse(data).results[0].geometry.location;
+	addressToLatLng(address, apiKey)
+		.then(latLng => {
+			const clientLocation = JSON.parse(latLng).results[0].geometry.location;
 			findNearestStore(JSONData, clientLocation)
 				.then(nearestStore => res.json(nearestStore))
 				.catch(err => {
 					console.error(err);
 					res.status(500).json({ err });		
 				})
-		});
-})
-	
-module.exports = app;
+		})
+    .catch(err => {
+      console.error(err)
+      res.status(500).json({ err });
+    });
+});
